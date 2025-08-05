@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card shadow p-4">
+    <h3>Food Log</h3>
+    <form method="post" class="row g-3 mb-3">
+        <div class="col-md-4">
+            <input type="text" name="meal" placeholder="Meal Name" class="form-control" required>
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="food_name" placeholder="Food Item" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <input type="number" step="0.1" name="calories" placeholder="Calories" class="form-control" required>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-success w-100">Add</button>
+        </div>
+    </form>
+
+    {% if logs %}
+    <ul class="list-group">
+        {% for log in logs %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ log.meal }}:</strong> {{ log.food_name }} - {{ log.calories }} kcal
+            </div>
+            <small class="text-muted">{{ log.date.strftime("%Y-%m-%d") }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="alert alert-info mt-3">
+        Total Calories Today: <strong>{{ total_calories }}</strong>
+    </div>
+    {% else %}
+    <p class="text-muted">No food logs for today.</p>
+    {% endif %}
+</div>
+{% endblock %}

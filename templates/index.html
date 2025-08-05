@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Welcome to the Nutrition App!</h2>
+  {% if current_user.is_authenticated %}
+    <p>Hello, {{ current_user.username }}!</p>
+    <a href="{{ url_for('meal_plan') }}">View My Meal Plan</a>
+  {% else %}
+    <p>Please log in to access your personalized diet recommendations.</p>
+  {% endif %}
+{% endblock %}

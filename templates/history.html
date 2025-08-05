@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card shadow p-4">
+    <h3>Recommendation History</h3>
+    {% if history %}
+        <ul class="list-group">
+            {% for record in history %}
+            <li class="list-group-item">
+                <small class="text-muted">{{ record.date.strftime("%Y-%m-%d %H:%M") }}</small><br>
+                <strong>{{ record.source|capitalize }}:</strong> {{ record.result }}
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">No history available.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card shadow p-4">
+    <h3 class="mb-4">Upload Food Image</h3>
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input class="form-control" type="file" name="image" accept="image/*" required>
+        </div>
+        <button class="btn btn-primary" type="submit">Upload</button>
+    </form>
+
+    {% if prediction %}
+    <hr>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <img src="{{ url_for('static', filename=image_path) }}" class="img-fluid rounded" alt="Predicted Food Image">
+        </div>
+        <div class="col-md-8">
+            <h5>Prediction Result:</h5>
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Food:</strong> {{ prediction }}</li>
+                <li class="list-group-item"><strong>Calories:</strong> {{ calories }} kcal</li>
+                <li class="list-group-item"><strong>Protein:</strong> {{ protein }} g</li>
+                <li class="list-group-item"><strong>Carbs:</strong> {{ carbs }} g</li>
+                <li class="list-group-item"><strong>Fat:</strong> {{ fat }} g</li>
+                <li class="list-group-item"><strong>Portion:</strong> {{ portion }} g</li>
+                <li class="list-group-item text-info"><strong>Advice:</strong> {{ advice }}</li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

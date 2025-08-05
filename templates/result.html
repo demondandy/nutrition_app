@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Results{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow">
+      <img src="{{ img_url }}" class="card-img-top" style="max-height:400px;object-fit:cover;">
+      <div class="card-body">
+        <h5 class="card-title">Nutrition Results</h5>
+        <ul class="list-group">
+          <li class="list-group-item">Calories (Random Forest): <strong>{{ calories_rf }}</strong></li>
+          <li class="list-group-item">Calories (CNN): <strong>{{ calories_cnn }}</strong></li>
+          <li class="list-group-item">Carbohydrates (g): <strong>{{ carb }}</strong></li>
+          <li class="list-group-item">Fat (g): <strong>{{ fat }}</strong></li>
+          <li class="list-group-item">Protein (g): <strong>{{ protein }}</strong></li>
+        </ul>
+        <a class="btn btn-secondary mt-3" href="{{ url_for('index') }}">Analyze Another Meal</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

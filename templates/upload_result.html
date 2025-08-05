@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Prediction Result</h2>
+
+<p><strong>Predicted Food:</strong> {{ predicted_label }}</p>
+
+<img src="{{ url_for('static', filename='uploads/' ~ image_url.split('/')[-1]) }}" width="300">
+
+<a href="{{ url_for('recommendation_history') }}" class="btn btn-primary mt-3">View History</a>
+{% endblock %}

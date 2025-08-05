@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card shadow p-4">
+    <h3>Today's Meal Plan</h3>
+    {% if plan %}
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Calories:</strong> {{ plan.calories }}</li>
+        <li class="list-group-item"><strong>Protein:</strong> {{ plan.protein_g }}g</li>
+        <li class="list-group-item"><strong>Carbs:</strong> {{ plan.carbs_g }}g</li>
+        <li class="list-group-item"><strong>Fat:</strong> {{ plan.fat_g }}g</li>
+        <li class="list-group-item"><strong>Meals:</strong> {{ plan.diet_plan }}</li>
+    </ul>
+    <div class="alert alert-info mt-3">{{ plan.explanation }}</div>
+    {% else %}
+    <p class="text-muted">No meal plan available for today.</p>
+    {% endif %}
+</div>
+{% endblock %}
