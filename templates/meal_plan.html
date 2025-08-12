@@ -1,19 +1,96 @@
 {% extends "layout.html" %}
-
 {% block content %}
 <div class="card shadow p-4">
-    <h3>Today's Meal Plan</h3>
-    {% if plan %}
-    <ul class="list-group">
-        <li class="list-group-item"><strong>Calories:</strong> {{ plan.calories }}</li>
-        <li class="list-group-item"><strong>Protein:</strong> {{ plan.protein_g }}g</li>
-        <li class="list-group-item"><strong>Carbs:</strong> {{ plan.carbs_g }}g</li>
-        <li class="list-group-item"><strong>Fat:</strong> {{ plan.fat_g }}g</li>
-        <li class="list-group-item"><strong>Meals:</strong> {{ plan.diet_plan }}</li>
-    </ul>
-    <div class="alert alert-info mt-3">{{ plan.explanation }}</div>
+    <h3 class="mb-4 text-success"><i class="bi bi-calendar-week"></i> Weekly Meal Plan</h3>
+
+    {% if weekly_plan %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-success">
+                <tr>
+                    <th>Day</th>
+                    <th><i class="bi bi-fire"></i> Calories</th>
+                    <th><i class="bi bi-egg-fried"></i> Protein (g)</th>
+                    <th><i class="bi bi-bread-slice"></i> Carbs (g)</th>
+                    <th><i class="bi bi-droplet-half"></i> Fat (g)</th>
+                    <th><i class="bi bi-journal-text"></i> Diet Plan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in weekly_plan %}
+                {% if plan %}
+                <tr class="{% if plan.calories > 2500 %}table-danger{% elif plan.calories < 1500 %}table-success{% endif %}">
+                    <td><strong>{{ plan.day }}</strong></td>
+                    <td data-bs-toggle="tooltip" title="Total Calories for the day">{{ plan.calories }}</td>
+                    <td data-bs-toggle="tooltip" title="Daily protein intake">{{ plan.protein_g }}</td>
+                    <td data-bs-toggle="tooltip" title="Daily carbohydrate intake">{{ plan.carbs_g }}</td>
+                    <td data-bs-toggle="tooltip" title="Daily fat intake">{{ plan.fat_g }}</td>
+                    <td>{{ plan.diet_plan }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Download Buttons -->
+    <div class="mt-3 text-center">
+        <a href="{{ url_for('download_meal_plan', file_type='csv') }}" class="btn btn-outline-success me-2">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Download CSV
+        </a>
+        <a href="{{ url_for('download_meal_plan', file_type='pdf') }}" class="btn btn-outline-danger">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+    </div>
+
+    <!-- Weekly Calorie Trend Chart -->
+    <div class="mt-5">
+        <h5 class="text-center text-primary"><i class="bi bi-graph-up"></i> Weekly Calorie Trend</h5>
+        <canvas id="calorieChart" height="120"></canvas>
+    </div>
+
     {% else %}
-    <p class="text-muted">No meal plan available for today.</p>
+    <p class="text-muted">No meal plan available for this week.</p>
     {% endif %}
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    {% if weekly_plan %}
+    const ctx = document.getElementById('calorieChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [{% for plan in weekly_plan %}"{{ plan.day }}",{% endfor %}],
+            datasets: [{
+                label: 'Calories (kcal)',
+                data: [{% for plan in weekly_plan %}{{ plan.calories }},{% endfor %}],
+                backgroundColor: [
+                    {% for plan in weekly_plan %}
+                        "{{ 'rgba(255, 99, 132, 0.7)' if plan.calories > 2500 else 'rgba(75, 192, 192, 0.7)' }}",
+                    {% endfor %}
+                ],
+                borderColor: 'rgba(0,0,0,0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 500 }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Enable Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+</script>
 {% endblock %}

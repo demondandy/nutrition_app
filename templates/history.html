@@ -1,19 +1,67 @@
 {% extends "layout.html" %}
-
 {% block content %}
-<div class="card shadow p-4">
-    <h3>Recommendation History</h3>
-    {% if history %}
-        <ul class="list-group">
-            {% for record in history %}
-            <li class="list-group-item">
-                <small class="text-muted">{{ record.date.strftime("%Y-%m-%d %H:%M") }}</small><br>
-                <strong>{{ record.source|capitalize }}:</strong> {{ record.result }}
-            </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-muted">No history available.</p>
-    {% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="bi bi-clock-history"></i> Prediction History</h4>
+                <form class="d-flex" method="GET" action="/history">
+                    <input class="form-control form-control-sm me-2" type="search" name="q" placeholder="Search food..." aria-label="Search">
+                    <button class="btn btn-light btn-sm" type="submit"><i class="bi bi-search"></i></button>
+                </form>
+            </div>
+            <div class="card-body p-0">
+                {% if history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Source</th>
+                                    <th>Food / Result</th>
+                                    <th>Calories</th>
+                                    <th>Advice</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in history %}
+                                    {% set parts = record.result.split('|') %}
+                                    {% set food_name = parts[0].replace('Image: ', '').strip() %}
+                                    {% set calories_info = parts[1].replace('Calories:', '').replace('kcal', '').strip() %}
+                                    {% set advice = parts[2].replace('Advice:', '').strip() %}
+                                    <tr>
+                                        <td>{{ record.date.strftime("%Y-%m-%d %H:%M") }}</td>
+                                        <td>
+                                            {% if record.source == 'image' %}
+                                                <span class="badge bg-info"><i class="bi bi-image"></i> Image</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary"><i class="bi bi-pencil"></i> Manual</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ food_name }}</td>
+                                        <td>{{ calories_info }} kcal</td>
+                                        <td>
+                                            {% if 'high' in advice|lower or 'not safe' in advice|lower %}
+                                                <span class="badge bg-danger">{{ advice }}</span>
+                                            {% else %}
+                                                <span class="badge bg-success">{{ advice }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-4 text-center text-muted">
+                        <i class="bi bi-emoji-frown fs-1"></i>
+                        <p class="mt-2">No history records found. Start uploading food images or adding meals to see them here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+
 {% endblock %}

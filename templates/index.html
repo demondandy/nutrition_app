@@ -1,10 +1,92 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block content %}
-  <h2>Welcome to the Nutrition App!</h2>
-  {% if current_user.is_authenticated %}
-    <p>Hello, {{ current_user.username }}!</p>
-    <a href="{{ url_for('meal_plan') }}">View My Meal Plan</a>
-  {% else %}
-    <p>Please log in to access your personalized diet recommendations.</p>
-  {% endif %}
+
+{% if not current_user.is_authenticated %}
+<!-- Public Landing Page -->
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold text-success">🥗 Welcome to the Nutrition App!</h1>
+    <p class="lead">Track your meals, analyze food nutrition, and get personalized health advice.</p>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg me-2">Get Started</a>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-success btn-lg">Login</a>
+</div>
+
+<!-- Hero Image -->
+<div class="text-center mb-5">
+    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" 
+         class="img-fluid rounded shadow" style="max-height: 400px;" alt="Healthy Food">
+</div>
+
+<!-- Informative Sections -->
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <img src="https://images.unsplash.com/photo-1510626176961-4b57d4fbad03" class="card-img-top" alt="Balanced Diet">
+            <div class="card-body">
+                <h5 class="card-title">Balanced Diet</h5>
+                <p class="card-text">A balanced diet provides your body with essential nutrients. This helps maintain your overall health, energy, and mental well-being.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c" class="card-img-top" alt="Track Nutrition">
+            <div class="card-body">
+                <h5 class="card-title">Track Your Nutrition</h5>
+                <p class="card-text">Easily upload a food image to analyze calories, protein, carbs, and fat. Get tailored advice based on your health profile.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm h-100">
+            <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d" class="card-img-top" alt="Meal Planning">
+            <div class="card-body">
+                <h5 class="card-title">Personalized Meal Plans</h5>
+                <p class="card-text">Receive daily and weekly meal plans aligned with your health goals. Whether it's weight loss, maintenance, or muscle gain.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Logged-in User Dashboard -->
+<div class="text-center mb-4">
+    <h2 class="fw-bold text-success">Hello, {{ current_user.username }}! 👋</h2>
+    <p class="lead">Your health journey starts today. Let’s keep it on track!</p>
+</div>
+
+
+
+
+<!-- Tip of the Day -->
+<!-- Tip of the Day -->
+<div class="card shadow mt-5">
+    <img src="{{ tip_of_the_day.image }}" class="card-img-top" alt="Nutrition Tip Image">
+    <div class="card-body">
+        <h5 class="card-title">💡 Tip of the Day</h5>
+        <p class="card-text">{{ tip_of_the_day.text }}</p>
+    </div>
+</div>
+
+<!-- Nutrition Articles -->
+<div class="mt-5">
+    <h3 class="mb-4">📚 Nutrition Articles</h3>
+    <div class="row">
+        {% for article in nutrition_articles %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <img src="{{ article.image }}" class="card-img-top" alt="{{ article.title }}">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ article.title }}</h5>
+                    <p class="card-text">{{ article.desc }}</p>
+                    <a href="{{ article.link }}" class="btn btn-success mt-auto">Read More</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+{% endif %}
+
 {% endblock %}

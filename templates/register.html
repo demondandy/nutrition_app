@@ -1,19 +1,103 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 {% block content %}
-  <h2>Register</h2>
-  <form method="POST" class="mt-3">
-      <div class="mb-3">
-          <label class="form-label">Username</label>
-          <input type="text" name="username" class="form-control">
-      </div>
-      <div class="mb-3">
-          <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-control">
-      </div>
-      <div class="mb-3">
-          <label class="form-label">Password</label>
-          <input type="password" name="password" class="form-control">
-      </div>
-      <button class="btn btn-success">Register</button>
-  </form>
+
+<div class="row justify-content-center">
+    <!-- Registration Form -->
+    <div class="col-lg-5 col-md-7">
+        <div class="card shadow-lg border-0 rounded-3 mb-4">
+            <div class="card-header bg-success text-white text-center py-3">
+                <h4 class="mb-0"><i class="bi bi-person-plus"></i> Create Your Account</h4>
+                <small>Join the Nutrition App and start your health journey today</small>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <!-- Name -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">UserName</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                            <input type="text" name="username" class="form-control" placeholder="Enter your  username" required>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                            <input type="email" name="email" class="form-control" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                        </div>
+                    </div>
+
+                    <!-- Register Button -->
+                    <div class="d-grid">
+                        <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-person-plus"></i> Register</button>
+                    </div>
+                </form>
+
+                <!-- Divider -->
+                <hr class="my-4">
+
+                <!-- Extra Links -->
+                <div class="text-center">
+                    <p class="mb-1">Already have an account? <a href="/auth/login" class="text-success fw-bold">Login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Nutrition Content Section -->
+<div class="mt-5">
+    <h3 class="text-center text-success fw-bold">🥗 Start Your Nutrition Journey</h3>
+    <p class="text-center text-muted mb-5">By joining, you gain access to personalized meal plans, calorie tracking, and expert nutrition advice.</p>
+
+    <div class="row g-4">
+        <!-- Card 1 -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <img src="/static/images/meal_plan.jpg" class="card-img-top" alt="Meal Plan">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Personalized Meal Plans</h5>
+                    <p class="card-text">Get meal recommendations based on your health goals and dietary needs.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <img src="/static/images/nutrition_tips.jpg" class="card-img-top" alt="Nutrition Tips">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Daily Nutrition Tips</h5>
+                    <p class="card-text">Learn practical tips to improve your eating habits and overall health.</p>
+                </div>
+            </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <img src="/static/images/healthy_lifestyle.jpg" class="card-img-top" alt="Healthy Lifestyle">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Healthy Lifestyle</h5>
+                    <p class="card-text">Adopt small, sustainable habits that make a big difference over time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tip of the Day -->
+    <div class="alert alert-success text-center mt-5">
+        <strong>💡 Tip of the Day:</strong> Eat smaller, balanced meals throughout the day to keep your energy steady.
+    </div>
+</div>
+
 {% endblock %}

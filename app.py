@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, send_file
 from flask_login import LoginManager, login_required, current_user
 from auth import auth
 from models import db, User, FoodLog, Recommendation, RecommendationHistory
@@ -12,6 +12,11 @@ from PIL import Image
 from datetime import datetime
 
 from tensorflow.keras.models import load_model
+
+import random
+import csv
+from fpdf import FPDF
+from io import BytesIO
 
 # ---------------------------
 # App configuration
@@ -33,6 +38,9 @@ login_manager.login_view = 'auth.login'
 login_manager.init_app(app)
 
 app.register_blueprint(auth, url_prefix='/auth')
+
+
+
 
 
 # ---------------------------
@@ -115,6 +123,66 @@ else:
     ])
     print("Using built-in dummy food data.")
 
+# Nutrition Tips with Images
+nutrition_tips = [
+    {
+        "text": "Stay hydrated! Drinking water can boost metabolism and improve focus.",
+        "image": "https://images.unsplash.com/photo-1562512045-32f8d3dba6d5?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "text": "Add more fruits and vegetables to your meals for extra vitamins and minerals.",
+        "image": "https://images.unsplash.com/photo-1506806732259-39c2d0268443?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "text": "Avoid skipping breakfast—it fuels your energy for the day.",
+        "image": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "text": "Limit sugary drinks and choose water or herbal tea instead.",
+        "image": "https://images.unsplash.com/photo-1580910051074-7db7d9a06c7b?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "text": "Eat slowly and mindfully to help control portion sizes.",
+        "image": "https://images.unsplash.com/photo-1600271881276-05051a6314ed?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "text": "Include lean protein sources like fish, chicken, beans, and nuts.",
+        "image": "https://images.unsplash.com/photo-1613145993482-3f2a3f2f8a7d?auto=format&fit=crop&w=800&q=80"
+    },
+    {
+        "text": "Get enough fiber daily from whole grains, fruits, and veggies.",
+        "image": "https://images.unsplash.com/photo-1565958011703-44e2aca4c73e?auto=format&fit=crop&w=800&q=80"
+    }
+]
+
+# Nutrition Articles (Title, Description, Image, Link)
+nutrition_articles = [
+    {
+        "title": "Top 10 Superfoods for Energy",
+        "desc": "Boost your daily energy with these nutrient-rich foods that support brain and body health.",
+        "image": "https://images.unsplash.com/photo-1572449043416-55f4685c9bbf?auto=format&fit=crop&w=800&q=80",
+        "link": "#"
+    },
+    {
+        "title": "The Science of Hydration",
+        "desc": "Learn why staying hydrated is key for metabolism, mood, and cognitive function.",
+        "image": "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=800&q=80",
+        "link": "#"
+    },
+    {
+        "title": "Healthy Nigerian Dishes You Should Try",
+        "desc": "Discover nutrient-packed traditional Nigerian meals and their health benefits.",
+        "image": "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80",
+        "link": "#"
+    },
+    {
+        "title": "Understanding Macronutrients",
+        "desc": "A beginner-friendly guide to proteins, carbs, and fats, and how they fuel your body.",
+        "image": "https://images.unsplash.com/photo-1604908812316-5f8b1d7e2e8d?auto=format&fit=crop&w=800&q=80",
+        "link": "#"
+    }
+]
+
 
 # ---------------------------
 # Routes
@@ -122,7 +190,16 @@ else:
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    import datetime
+    today_index = datetime.datetime.now().day % len(nutrition_tips)
+    tip_of_the_day = nutrition_tips[today_index]
+
+    return render_template(
+        'index.html',
+        tip_of_the_day=tip_of_the_day,
+        nutrition_articles=nutrition_articles
+    )
+
 
 
 @app.route('/profile', methods=['GET', 'POST'])
@@ -153,12 +230,13 @@ def uploaded_file(filename):
 @login_required
 def upload_image():
     if request.method == 'POST':
-        file = request.files['image']
+        file = request.files.get('image')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(save_path)
 
+            # Preprocess image for prediction
             img = Image.open(save_path).resize((150, 150))
             img_array = np.array(img) / 255.0
             img_array = np.expand_dims(img_array, axis=0)
@@ -167,7 +245,10 @@ def upload_image():
             label_index = np.argmax(prediction[0])
             predicted_label = class_labels[label_index]
 
-            food_info = nigeria_food_df[nigeria_food_df['Food_Name'].str.lower() == predicted_label.lower()]
+            # Lookup nutritional info from Nigeria food CSV
+            food_info = nigeria_food_df[
+                nigeria_food_df['Food_Name'].str.lower() == predicted_label.lower()
+            ]
             if not food_info.empty:
                 row = food_info.iloc[0]
                 calories = row['Calories_kcal']
@@ -178,20 +259,27 @@ def upload_image():
             else:
                 calories = protein = carbs = fat = portion = 0
 
+            # Calculate user daily calorie needs
             user_daily_calories = calculate_daily_calories(current_user)
-            if calories > user_daily_calories * 0.5:
-                advice = "This meal is high in calories compared to your daily need. Consider a lighter option."
-            else:
-                advice = "This meal fits within a healthy daily intake."
 
+            # Generate advice
+            if calories == 0:
+                advice = "No nutrition data available for this food."
+            elif calories > user_daily_calories * 0.5:
+                advice = "⚠️ This meal is high in calories compared to your daily needs. Consider a lighter option."
+            else:
+                advice = "✅ This meal fits well within your daily calorie intake."
+
+            # Save recommendation history
             record = RecommendationHistory(
                 user_id=current_user.id,
                 source='image',
-                result=f"Image: {predicted_label} | Calories: {calories} kcal | Advice: {advice}"
+                result=f"Food: {predicted_label} | Calories: {calories} kcal | Advice: {advice}"
             )
             db.session.add(record)
             db.session.commit()
 
+            # Pass everything to template
             return render_template(
                 "upload.html",
                 prediction=predicted_label,
@@ -201,12 +289,14 @@ def upload_image():
                 fat=fat,
                 portion=portion,
                 advice=advice,
-                image_path=os.path.join('uploads', filename)
+                image_path=url_for('static', filename=f'uploads/{filename}')
             )
         else:
-            flash("Invalid file type.", "danger")
+            flash("Invalid file type. Please upload a JPG, JPEG, or PNG image.", "danger")
 
     return render_template("upload.html")
+
+
 
 
 @app.route('/history')
@@ -244,17 +334,60 @@ def food_log():
 @app.route('/meal_plan')
 @login_required
 def meal_plan():
-    today = datetime.now().strftime("%a")[:3]
-    plan = get_meal_plan("F1", "RF", today)
-    if plan:
-        rec = Recommendation(
-            user_id=current_user.id,
-            recommended_plan=plan["diet_plan"],
-            explanation_text=plan["explanation"]
-        )
-        db.session.add(rec)
-        db.session.commit()
-    return render_template("meal_plan.html", plan=plan)
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    weekly_plan = [get_meal_plan("F1", "RF", day) for day in days]
+
+    # Store in DB for history tracking
+    for plan in weekly_plan:
+        if plan:
+            rec = Recommendation(
+                user_id=current_user.id,
+                recommended_plan=plan["diet_plan"],
+                explanation_text=plan["explanation"]
+            )
+            db.session.add(rec)
+    db.session.commit()
+
+    return render_template("meal_plan.html", weekly_plan=weekly_plan)
+
+
+@app.route('/meal_plan/download/<file_type>')
+@login_required
+def download_meal_plan(file_type):
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    weekly_plan = [get_meal_plan("F1", "RF", day) for day in days]
+
+    if file_type == "csv":
+        filepath = "weekly_meal_plan.csv"
+        with open(filepath, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Day", "Calories", "Protein (g)", "Carbs (g)", "Fat (g)", "Diet Plan"])
+            for plan in weekly_plan:
+                if plan:
+                    writer.writerow([plan["day"], plan["calories"], plan["protein_g"], plan["carbs_g"], plan["fat_g"], plan["diet_plan"]])
+        return send_file(filepath, as_attachment=True)
+
+    elif file_type == "pdf":
+        filepath = "weekly_meal_plan.pdf"
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", size=14)
+        pdf.cell(200, 10, "Weekly Meal Plan", ln=True, align='C')
+        pdf.ln(5)
+
+        pdf.set_font("Arial", size=10)
+        for plan in weekly_plan:
+            if plan:
+                pdf.multi_cell(0, 8, f"{plan['day']}: {plan['diet_plan']} "
+                                      f"({plan['calories']} kcal, P:{plan['protein_g']}g, C:{plan['carbs_g']}g, F:{plan['fat_g']}g)")
+                pdf.ln(1)
+        pdf.output(filepath)
+        return send_file(filepath, as_attachment=True)
+
+    else:
+        flash("Invalid file type requested.", "danger")
+        return redirect(url_for("meal_plan"))
+
 
 
 @app.route('/predict', methods=['POST'])

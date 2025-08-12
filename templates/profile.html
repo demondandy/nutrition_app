@@ -1,45 +1,67 @@
 {% extends "layout.html" %}
-
 {% block content %}
-<div class="card shadow p-4">
-    <h3>Profile Information</h3>
-    <form method="post">
-        <div class="mb-3">
-            <label for="height" class="form-label">Height (cm)</label>
-            <input type="number" step="0.1" class="form-control" id="height" name="height" value="{{ user.height_cm or '' }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="weight" class="form-label">Weight (kg)</label>
-            <input type="number" step="0.1" class="form-control" id="weight" name="weight" value="{{ user.weight_kg or '' }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="age" class="form-label">Age</label>
-            <input type="number" class="form-control" id="age" name="age" value="{{ user.age or '' }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="gender" class="form-label">Gender</label>
-            <select class="form-select" name="gender" id="gender" required>
-                <option value="">Select</option>
-                <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
-                <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label for="activity" class="form-label">Activity Level</label>
-            <select class="form-select" name="activity" id="activity" required>
-                <option value="">Select</option>
-                <option value="low" {% if user.activity_level == 'low' %}selected{% endif %}>Low</option>
-                <option value="medium" {% if user.activity_level == 'medium' %}selected{% endif %}>Medium</option>
-                <option value="high" {% if user.activity_level == 'high' %}selected{% endif %}>High</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Update Profile</button>
-    </form>
 
-    {% if bmi %}
-    <div class="alert alert-info mt-3">
-        Your BMI: <strong>{{ bmi|round(1) }}</strong>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-person-circle"></i> Profile Information</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="height" class="form-label">Height (cm)</label>
+                            <input type="number" step="0.1" class="form-control" id="height" name="height" 
+                                   value="{{ user.height_cm or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="weight" class="form-label">Weight (kg)</label>
+                            <input type="number" step="0.1" class="form-control" id="weight" name="weight" 
+                                   value="{{ user.weight_kg or '' }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="age" class="form-label">Age</label>
+                            <input type="number" class="form-control" id="age" name="age" 
+                                   value="{{ user.age or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="gender" class="form-label">Gender</label>
+                            <select class="form-select" name="gender" id="gender" required>
+                                <option value="">Select</option>
+                                <option value="male" {% if user.gender == 'male' %}selected{% endif %}>Male</option>
+                                <option value="female" {% if user.gender == 'female' %}selected{% endif %}>Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="activity" class="form-label">Activity Level</label>
+                        <select class="form-select" name="activity" id="activity" required>
+                            <option value="">Select</option>
+                            <option value="low" {% if user.activity_level == 'low' %}selected{% endif %}>Low</option>
+                            <option value="medium" {% if user.activity_level == 'medium' %}selected{% endif %}>Medium</option>
+                            <option value="high" {% if user.activity_level == 'high' %}selected{% endif %}>High</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-check-circle"></i> Update Profile
+                    </button>
+                </form>
+
+                {% if bmi %}
+                    <div class="alert alert-info mt-4 text-center">
+                        <h5 class="mb-1">Your BMI</h5>
+                        <p class="mb-0"><strong>{{ bmi|round(1) }}</strong></p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
-    {% endif %}
 </div>
+
 {% endblock %}

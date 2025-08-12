@@ -7,3 +7,4 @@ tensorflow
 pillow 
 numpy
 gunicorn==21.2.0
+fpdf

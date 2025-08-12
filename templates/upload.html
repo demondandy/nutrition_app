@@ -1,34 +1,95 @@
 {% extends "layout.html" %}
-
 {% block content %}
-<div class="card shadow p-4">
-    <h3 class="mb-4">Upload Food Image</h3>
-    <form method="post" enctype="multipart/form-data">
-        <div class="mb-3">
-            <input class="form-control" type="file" name="image" accept="image/*" required>
-        </div>
-        <button class="btn btn-primary" type="submit">Upload</button>
-    </form>
 
-    {% if prediction %}
-    <hr>
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <img src="{{ url_for('static', filename=image_path) }}" class="img-fluid rounded" alt="Predicted Food Image">
-        </div>
-        <div class="col-md-8">
-            <h5>Prediction Result:</h5>
-            <ul class="list-group">
-                <li class="list-group-item"><strong>Food:</strong> {{ prediction }}</li>
-                <li class="list-group-item"><strong>Calories:</strong> {{ calories }} kcal</li>
-                <li class="list-group-item"><strong>Protein:</strong> {{ protein }} g</li>
-                <li class="list-group-item"><strong>Carbs:</strong> {{ carbs }} g</li>
-                <li class="list-group-item"><strong>Fat:</strong> {{ fat }} g</li>
-                <li class="list-group-item"><strong>Portion:</strong> {{ portion }} g</li>
-                <li class="list-group-item text-info"><strong>Advice:</strong> {{ advice }}</li>
-            </ul>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="bi bi-cloud-upload"></i> Upload Food Image</h4>
+            </div>
+            <div class="card-body">
+                <form action="/upload" method="POST" enctype="multipart/form-data" class="mb-3">
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Choose Food Image:</label>
+                        <input class="form-control" type="file" id="image" name="image" accept="image/*" onchange="previewImage(event)">
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Analyze Food</button>
+                </form>
+
+                <!-- Live Preview Before Upload -->
+                <div id="preview-container" class="text-center mb-3" style="display:none;">
+                    <img id="preview-image" src="#" alt="Preview" class="img-fluid rounded shadow-sm" style="max-height:300px;">
+                </div>
+
+                {% if prediction %}
+                    <!-- Show Uploaded Image After Analysis -->
+                    {% if image_path %}
+                        <div class="text-center mb-3">
+                            <img src="{{ url_for('static', filename=image_path) }}" alt="Uploaded Food" class="img-fluid rounded shadow-sm" style="max-height:300px;">
+                        </div>
+                    {% endif %}
+
+                    <!-- Analysis Result -->
+                    <hr>
+                    <h5 class="text-center">🍽 Predicted Food: <strong>{{ prediction }}</strong></h5>
+                    <p class="text-center">Calories: <strong>{{ calories }} kcal</strong></p>
+
+                    <!-- Calories Progress Bar -->
+                    {% if daily_limit %}
+                        <div class="mb-3">
+                            <label class="form-label">Daily Calorie Intake Progress:</label>
+                            <div class="progress">
+                                {% set percent = (calories / daily_limit * 100) | round(1) %}
+                                <div class="progress-bar {% if percent > 100 %}bg-danger{% else %}bg-success{% endif %}" 
+                                     role="progressbar" style="width: {{ percent }}%;" 
+                                     aria-valuenow="{{ percent }}" aria-valuemin="0" aria-valuemax="100">
+                                    {{ percent }}%
+                                </div>
+                            </div>
+                            <small>Your daily limit: {{ daily_limit }} kcal</small>
+                        </div>
+                    {% endif %}
+
+                    <!-- Nutrition Chart -->
+                    {% if protein and carbs and fat %}
+                        <canvas id="nutritionChart" height="150"></canvas>
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                        <script>
+                            const ctx = document.getElementById('nutritionChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Protein (g)', 'Carbs (g)', 'Fat (g)'],
+                                    datasets: [{
+                                        data: [{{ protein }}, {{ carbs }}, {{ fat }}],
+                                        backgroundColor: ['#4CAF50', '#FFC107', '#FF5722']
+                                    }]
+                                }
+                            });
+                        </script>
+                    {% endif %}
+
+                    <!-- Health Advice -->
+                    {% if advice %}
+                        <div class="alert {% if 'high' in advice|lower or 'not safe' in advice|lower %}alert-danger{% else %}alert-info{% endif %} mt-3">
+                            {{ advice }}
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
-    {% endif %}
 </div>
+
+<script>
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById('preview-image').src = reader.result;
+        document.getElementById('preview-container').style.display = 'block';
+    }
+    reader.readAsDataURL(event.target.files[0]);
+}
+</script>
+
 {% endblock %}
